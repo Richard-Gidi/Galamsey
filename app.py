@@ -228,17 +228,13 @@ df = pd.DataFrame(data)
 standards_df = pd.DataFrame(standards)
 
 
-# Function to search web (mock or real version)
-def search_web(query):
-    # Replace with SerpAPI/Bing if needed
-    return f"🔍 Here's what I found online about '{query}': Galamsey has significantly affected water bodies in Ghana, especially in the Ashanti and Eastern Regions."
-
-# Function to generate AI response
+# Function to generate AI response using OpenAI
 def generate_response(prompt, data):
     prompt_lower = prompt.lower()
-    
+
+    # Handle average/mean-related prompts with data
     if "average" in prompt_lower or "mean" in prompt_lower:
-        if "ph" in prompt_lower and "ph" in data.columns:
+        if "ph" in prompt_lower and "pH" in data.columns:
             avg_ph = data["pH"].mean()
             return f"The average pH value across all sampled locations is **{avg_ph:.2f}**."
         elif "turbidity" in prompt_lower and "Turbidity" in data.columns:
@@ -250,12 +246,32 @@ def generate_response(prompt, data):
         else:
             return "I couldn't find that parameter in the dataset. Please check the column name."
 
-    elif "galamsey" in prompt_lower or "illegal mining" in prompt_lower:
-        return search_web(prompt)
+    # All other prompts → OpenAI
+    try:
+        completion = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that answers questions about water quality, pollution, and environmental issues in Ghana."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7
+        )
+        return completion.choices[0].message["content"]
+    except Exception as e:
+        return f"⚠️ Error generating response: {str(e)}"
 
-    else:
-        return "🤖 I'm here to help. Please ask about water quality parameters like pH, turbidity, or Galamsey-related issues in Ghana."
+# Streamlit UI
+st.header("💧 Galamsey & Water Quality Assistant")
 
+st.markdown("""
+<div style='background-color: #ffffff; color: #000000; padding: 25px; border-radius: 10px; border: 2px solid #3498db; margin: 20px 0;'>
+<p>Welcome! Ask anything about <strong>Galamsey</strong> and its impact on water quality in Ghana. This assistant can:</p>
+<ul>
+    <li>📊 Analyze pH, turbidity, and heavy metals in your dataset</li>
+    <li>🧠 Provide intelligent insights using AI</li>
+</ul>
+</div>
+""", unsafe_allow_html=True)
 
 # Chat history
 if "messages" not in st.session_state:
