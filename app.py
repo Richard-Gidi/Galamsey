@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-#from sklearn.ensemble import IsolationForest
+from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from scipy import stats
@@ -1208,6 +1208,7 @@ st.markdown(f"""
 # Initialize chat assistant
 st.header("🤖 AI Assistant")
 st.markdown("""
+<div style='background-color: #ffffff; color: #000000; padding: 25px; border-radius: 10px; border: 2px solid #3498db; margin: 20px 0;'>
 <div class="info-box">
     <p>Ask me anything about the water quality data!</p>
 </div>
