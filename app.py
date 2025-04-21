@@ -510,7 +510,7 @@ with tab1:
         showlegend=True,
         height=600
     )
-        st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
 
     # Statistical insights with explanations
     st.subheader("Statistical Insights")
