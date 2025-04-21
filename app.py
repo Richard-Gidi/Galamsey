@@ -330,27 +330,6 @@ parameter = st.sidebar.selectbox(
     options=category_options[category_group]
 )
 
-# Chat history in the sidebar
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# Display message history in the sidebar
-for message in st.session_state.messages:
-    with st.sidebar:
-        st.markdown(f"**{message['role'].capitalize()}:** {message['content']}")
-
-# User prompt in the sidebar
-if prompt := st.sidebar.text_input("Ask a question..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    
-    # Generate response
-    response = generate_response(prompt, data)
-    st.session_state.messages.append({"role": "assistant", "content": response})
-
-    # Display response in the sidebar
-    with st.sidebar:
-        st.markdown(f"**Assistant:** {response}")
-
 
 
 # Parameter information and health implications
