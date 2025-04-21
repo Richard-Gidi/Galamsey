@@ -234,18 +234,6 @@ def generate_response(prompt, data):
     else:
         return "🤖 I'm here to help. Please ask about water quality parameters like pH, turbidity, or Galamsey-related issues in Ghana."
 
-# Streamlit UI
-st.header("💧 Galamsey & Water Quality Assistant")
-
-st.markdown("""
-<div style='background-color: #ffffff; color: #000000; padding: 25px; border-radius: 10px; border: 2px solid #3498db; margin: 20px 0;'>
-<p>Welcome! Ask anything about <strong>Galamsey</strong> and its impact on water quality in Ghana. This assistant can:</p>
-<ul>
-    <li>🔎 Analyze pH, turbidity, and heavy metals in your dataset</li>
-    <li>🌍 Provide contextual insights about illegal mining (Galamsey) in Ghana</li>
-</ul>
-</div>
-""", unsafe_allow_html=True)
 
 # Chat history
 if "messages" not in st.session_state:
