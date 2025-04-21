@@ -12,7 +12,7 @@ from sklearn.manifold import TSNE
 from datetime import datetime, timedelta
 import numpy as np
 import random
-import openai  # or another LLM API
+from openai import OpenAI  # or another LLM API
 import requests
 import os
 
@@ -202,10 +202,6 @@ statistical_metrics = {
 
 
 
-# Automatically fetches from the environment
-openai_api_key = os.getenv("OPENAI_API_KEY")
-
-
 
 # Load data
 data = pd.read_excel("DATASET_v0.1.xlsx")
@@ -228,6 +224,9 @@ df = pd.DataFrame(data)
 standards_df = pd.DataFrame(standards)
 
 
+# Initialize OpenAI client
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 # Function to generate AI response using OpenAI
 def generate_response(prompt, data):
     prompt_lower = prompt.lower()
@@ -246,9 +245,9 @@ def generate_response(prompt, data):
         else:
             return "I couldn't find that parameter in the dataset. Please check the column name."
 
-    # All other prompts → OpenAI
+    # Fallback: Ask the LLM
     try:
-        completion = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant that answers questions about water quality, pollution, and environmental issues in Ghana."},
@@ -256,43 +255,9 @@ def generate_response(prompt, data):
             ],
             temperature=0.7
         )
-        return completion.choices[0].message["content"]
+        return response.choices[0].message.content
     except Exception as e:
         return f"⚠️ Error generating response: {str(e)}"
-
-# Streamlit UI
-st.header("💧 Galamsey & Water Quality Assistant")
-
-st.markdown("""
-<div style='background-color: #ffffff; color: #000000; padding: 25px; border-radius: 10px; border: 2px solid #3498db; margin: 20px 0;'>
-<p>Welcome! Ask anything about <strong>Galamsey</strong> and its impact on water quality in Ghana. This assistant can:</p>
-<ul>
-    <li>📊 Analyze pH, turbidity, and heavy metals in your dataset</li>
-    <li>🧠 Provide intelligent insights using AI</li>
-</ul>
-</div>
-""", unsafe_allow_html=True)
-
-# Chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# Display message history
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-# User prompt
-if prompt := st.chat_input("Ask a question..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    # Generate response
-    response = generate_response(prompt, data)
-    st.session_state.messages.append({"role": "assistant", "content": response})
-    with st.chat_message("assistant"):
-        st.markdown(response)
 
 
 # Add derived metrics
