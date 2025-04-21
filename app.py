@@ -12,6 +12,9 @@ from sklearn.manifold import TSNE
 from datetime import datetime, timedelta
 import numpy as np
 import random
+import openai  # or another LLM API
+import requests
+import os
 
 # Page configuration
 st.set_page_config(
@@ -1205,53 +1208,70 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Initialize chat assistant
-st.header("🤖 AI Assistant")
+
+
+
+# Automatically fetches from the environment
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# Function to search web (mock or real version)
+def search_web(query):
+    # Replace with SerpAPI/Bing if needed
+    return f"🔍 (Mock result) Here's what I found online about '{query}': Galamsey has significantly affected water bodies in Ghana, especially in the Ashanti and Eastern Regions."
+
+# Function to generate AI response
+def generate_response(prompt, data):
+    prompt_lower = prompt.lower()
+    
+    if "average" in prompt_lower or "mean" in prompt_lower:
+        if "ph" in prompt_lower and "ph" in data.columns:
+            avg_ph = data["pH"].mean()
+            return f"The average pH value across all sampled locations is **{avg_ph:.2f}**."
+        elif "turbidity" in prompt_lower and "Turbidity" in data.columns:
+            avg_turb = data["Turbidity"].mean()
+            return f"The average turbidity across all locations is **{avg_turb:.2f} NTU**."
+        elif "iron" in prompt_lower and "Iron" in data.columns:
+            avg_iron = data["Iron"].mean()
+            return f"The average iron concentration is **{avg_iron:.2f} mg/L**."
+        else:
+            return "I couldn't find that parameter in the dataset. Please check the column name."
+
+    elif "galamsey" in prompt_lower or "illegal mining" in prompt_lower:
+        return search_web(prompt)
+
+    else:
+        return "🤖 I'm here to help. Please ask about water quality parameters like pH, turbidity, or Galamsey-related issues in Ghana."
+
+# Streamlit UI
+st.header("💧 Galamsey & Water Quality Assistant")
+
 st.markdown("""
 <div style='background-color: #ffffff; color: #000000; padding: 25px; border-radius: 10px; border: 2px solid #3498db; margin: 20px 0;'>
-<div class="info-box">
-    <p>Ask me anything about the water quality data!</p>
+<p>Welcome! Ask anything about <strong>Galamsey</strong> and its impact on water quality in Ghana. This assistant can:</p>
+<ul>
+    <li>🔎 Analyze pH, turbidity, and heavy metals in your dataset</li>
+    <li>🌍 Provide contextual insights about illegal mining (Galamsey) in Ghana</li>
+</ul>
 </div>
 """, unsafe_allow_html=True)
 
-# Initialize chat history
+# Chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display chat messages
+# Display message history
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Chat input
-if prompt := st.chat_input("Ask a question about the water quality data..."):
-    # Add user message to chat history
+# User prompt
+if prompt := st.chat_input("Ask a question..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Generate simple AI response
+    # Generate response
+    response = generate_response(prompt, data)
+    st.session_state.messages.append({"role": "assistant", "content": response})
     with st.chat_message("assistant"):
-        response = "I can help you analyze this water quality data. Could you please specify which parameter or location you're interested in?"
         st.markdown(response)
-        st.session_state.messages.append({"role": "assistant", "content": response})
-
-# Add some CSS for the chat interface
-st.markdown("""
-<style>
-    .stChatMessage {
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1rem;
-    }
-    .stChatMessage.user {
-        background-color: #f0f2f6;
-    }
-    .stChatMessage.assistant {
-        background-color: #e6f3ff;
-    }
-    .chat-input {
-        margin-top: 1rem;
-    }
-</style>
-""", unsafe_allow_html=True) 
