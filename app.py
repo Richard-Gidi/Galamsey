@@ -202,6 +202,74 @@ statistical_metrics = {
 
 
 
+# Automatically fetches from the environment
+openai_api_key = os.getenv("OPENAI_API_KEY")
+
+
+# Function to search web (mock or real version)
+def search_web(query):
+    # Replace with SerpAPI/Bing if needed
+    return f"🔍 (Mock result) Here's what I found online about '{query}': Galamsey has significantly affected water bodies in Ghana, especially in the Ashanti and Eastern Regions."
+
+# Function to generate AI response
+def generate_response(prompt, data):
+    prompt_lower = prompt.lower()
+    
+    if "average" in prompt_lower or "mean" in prompt_lower:
+        if "ph" in prompt_lower and "ph" in data.columns:
+            avg_ph = data["pH"].mean()
+            return f"The average pH value across all sampled locations is **{avg_ph:.2f}**."
+        elif "turbidity" in prompt_lower and "Turbidity" in data.columns:
+            avg_turb = data["Turbidity"].mean()
+            return f"The average turbidity across all locations is **{avg_turb:.2f} NTU**."
+        elif "iron" in prompt_lower and "Iron" in data.columns:
+            avg_iron = data["Iron"].mean()
+            return f"The average iron concentration is **{avg_iron:.2f} mg/L**."
+        else:
+            return "I couldn't find that parameter in the dataset. Please check the column name."
+
+    elif "galamsey" in prompt_lower or "illegal mining" in prompt_lower:
+        return search_web(prompt)
+
+    else:
+        return "🤖 I'm here to help. Please ask about water quality parameters like pH, turbidity, or Galamsey-related issues in Ghana."
+
+# Streamlit UI
+st.header("💧 Galamsey & Water Quality Assistant")
+
+st.markdown("""
+<div style='background-color: #ffffff; color: #000000; padding: 25px; border-radius: 10px; border: 2px solid #3498db; margin: 20px 0;'>
+<p>Welcome! Ask anything about <strong>Galamsey</strong> and its impact on water quality in Ghana. This assistant can:</p>
+<ul>
+    <li>🔎 Analyze pH, turbidity, and heavy metals in your dataset</li>
+    <li>🌍 Provide contextual insights about illegal mining (Galamsey) in Ghana</li>
+</ul>
+</div>
+""", unsafe_allow_html=True)
+
+# Chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Display message history
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# User prompt
+if prompt := st.chat_input("Ask a question..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    # Generate response
+    response = generate_response(prompt, data)
+    st.session_state.messages.append({"role": "assistant", "content": response})
+    with st.chat_message("assistant"):
+        st.markdown(response)
+
+
+
 
 # Load data
 data = pd.read_excel("DATASET_v0.1.xlsx")
@@ -273,6 +341,29 @@ parameter = st.sidebar.selectbox(
     "Select Parameter for Analysis",
     options=category_options[category_group]
 )
+
+# Chat history in the sidebar
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Display message history in the sidebar
+for message in st.session_state.messages:
+    with st.sidebar:
+        st.markdown(f"**{message['role'].capitalize()}:** {message['content']}")
+
+# User prompt in the sidebar
+if prompt := st.sidebar.text_input("Ask a question..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    
+    # Generate response
+    response = generate_response(prompt, data)
+    st.session_state.messages.append({"role": "assistant", "content": response})
+
+    # Display response in the sidebar
+    with st.sidebar:
+        st.markdown(f"**Assistant:** {response}")
+
+
 
 # Parameter information and health implications
 if parameter in parameter_info:
@@ -1211,68 +1302,3 @@ st.markdown(f"""
 
 
 
-# Automatically fetches from the environment
-openai_api_key = os.getenv("OPENAI_API_KEY")
-
-
-# Function to search web (mock or real version)
-def search_web(query):
-    # Replace with SerpAPI/Bing if needed
-    return f"🔍 (Mock result) Here's what I found online about '{query}': Galamsey has significantly affected water bodies in Ghana, especially in the Ashanti and Eastern Regions."
-
-# Function to generate AI response
-def generate_response(prompt, data):
-    prompt_lower = prompt.lower()
-    
-    if "average" in prompt_lower or "mean" in prompt_lower:
-        if "ph" in prompt_lower and "ph" in data.columns:
-            avg_ph = data["pH"].mean()
-            return f"The average pH value across all sampled locations is **{avg_ph:.2f}**."
-        elif "turbidity" in prompt_lower and "Turbidity" in data.columns:
-            avg_turb = data["Turbidity"].mean()
-            return f"The average turbidity across all locations is **{avg_turb:.2f} NTU**."
-        elif "iron" in prompt_lower and "Iron" in data.columns:
-            avg_iron = data["Iron"].mean()
-            return f"The average iron concentration is **{avg_iron:.2f} mg/L**."
-        else:
-            return "I couldn't find that parameter in the dataset. Please check the column name."
-
-    elif "galamsey" in prompt_lower or "illegal mining" in prompt_lower:
-        return search_web(prompt)
-
-    else:
-        return "🤖 I'm here to help. Please ask about water quality parameters like pH, turbidity, or Galamsey-related issues in Ghana."
-
-# Streamlit UI
-st.header("💧 Galamsey & Water Quality Assistant")
-
-st.markdown("""
-<div style='background-color: #ffffff; color: #000000; padding: 25px; border-radius: 10px; border: 2px solid #3498db; margin: 20px 0;'>
-<p>Welcome! Ask anything about <strong>Galamsey</strong> and its impact on water quality in Ghana. This assistant can:</p>
-<ul>
-    <li>🔎 Analyze pH, turbidity, and heavy metals in your dataset</li>
-    <li>🌍 Provide contextual insights about illegal mining (Galamsey) in Ghana</li>
-</ul>
-</div>
-""", unsafe_allow_html=True)
-
-# Chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# Display message history
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-# User prompt
-if prompt := st.chat_input("Ask a question..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    # Generate response
-    response = generate_response(prompt, data)
-    st.session_state.messages.append({"role": "assistant", "content": response})
-    with st.chat_message("assistant"):
-        st.markdown(response)
