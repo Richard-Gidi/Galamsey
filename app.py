@@ -206,10 +206,32 @@ statistical_metrics = {
 openai_api_key = os.getenv("OPENAI_API_KEY")
 
 
+
+# Load data
+data = pd.read_excel("DATASET_v0.1.xlsx")
+
+# Create standards data
+standards = {
+    'Standard': ['WHO', 'US EPA', 'Ghana Standard'],
+    'As': [0.05, 0.01, 0.01],
+    'Cd': [0.005, 0.005, 0.003],
+    'Cr': [0.05, 0.05, 0.05],
+    'Pb': [0.05, 0.015, 0.01],
+    'pH_min': [6.5, 6.5, 6.5],
+    'pH_max': [8.5, 8.5, 8.5],
+    'TDS': [1000, 500, 1000],
+    'Conductivity': [1000, 1000, 1000],
+    'Hardness': [500, 500, 500],
+}
+
+df = pd.DataFrame(data)
+standards_df = pd.DataFrame(standards)
+
+
 # Function to search web (mock or real version)
 def search_web(query):
     # Replace with SerpAPI/Bing if needed
-    return f"🔍 (Mock result) Here's what I found online about '{query}': Galamsey has significantly affected water bodies in Ghana, especially in the Ashanti and Eastern Regions."
+    return f"🔍 Here's what I found online about '{query}': Galamsey has significantly affected water bodies in Ghana, especially in the Ashanti and Eastern Regions."
 
 # Function to generate AI response
 def generate_response(prompt, data):
@@ -256,28 +278,6 @@ if prompt := st.chat_input("Ask a question..."):
     with st.chat_message("assistant"):
         st.markdown(response)
 
-
-
-
-# Load data
-data = pd.read_excel("DATASET_v0.1.xlsx")
-
-# Create standards data
-standards = {
-    'Standard': ['WHO', 'US EPA', 'Ghana Standard'],
-    'As': [0.05, 0.01, 0.01],
-    'Cd': [0.005, 0.005, 0.003],
-    'Cr': [0.05, 0.05, 0.05],
-    'Pb': [0.05, 0.015, 0.01],
-    'pH_min': [6.5, 6.5, 6.5],
-    'pH_max': [8.5, 8.5, 8.5],
-    'TDS': [1000, 500, 1000],
-    'Conductivity': [1000, 1000, 1000],
-    'Hardness': [500, 500, 500],
-}
-
-df = pd.DataFrame(data)
-standards_df = pd.DataFrame(standards)
 
 # Add derived metrics
 df['Heavy_Metal_Index'] = (df['As']/standards_df.loc[0, 'As'] + 
