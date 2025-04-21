@@ -12,6 +12,7 @@ from sklearn.manifold import TSNE
 from datetime import datetime, timedelta
 import numpy as np
 import random
+import openai
 from openai import OpenAI  # or another LLM API
 import requests
 import os
@@ -224,10 +225,8 @@ df = pd.DataFrame(data)
 standards_df = pd.DataFrame(standards)
 
 
-# Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Function to generate AI response using OpenAI
 def generate_response(prompt, data):
     prompt_lower = prompt.lower()
 
@@ -245,8 +244,9 @@ def generate_response(prompt, data):
         else:
             return "I couldn't find that parameter in the dataset. Please check the column name."
 
-    # Fallback: Ask the LLM
+    # All other prompts → OpenAI (modern version)
     try:
+        client = openai.OpenAI()  # <--- NEW way
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -258,6 +258,7 @@ def generate_response(prompt, data):
         return response.choices[0].message.content
     except Exception as e:
         return f"⚠️ Error generating response: {str(e)}"
+
 
 
 # Add derived metrics
