@@ -392,6 +392,7 @@ ranking_view = st.sidebar.radio(
 if ranking_view == "Custom Range":
     num_locations = st.sidebar.slider("Number of locations to show", 2, len(df), 6)
 
+
 # Standard selection
 selected_standard = st.sidebar.selectbox(
     "Select Standard for Comparison",
